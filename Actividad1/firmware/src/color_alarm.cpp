@@ -14,11 +14,12 @@ namespace IUDA{
         }
 
         void turnOff(){
-            for(int i=0; i<NUMPIXELS; i++){
+            for(int i=0; i<NUMPIXELS-1; i++){
                 pixels.setPixelColor(i, pixels.Color(0, 0, 0));
             }
-            Serial.println("COLOR ALARM OFF");
             pixels.show();
+            // pixels.clear();
+            Serial.println("[!]COLOR ALARM OFF");
         }
 
         void maxTemperature(){
@@ -26,7 +27,7 @@ namespace IUDA{
                 pixels.setPixelColor(i, pixels.Color(255, 0, 0));
             }
             pixels.show();
-            Serial.println("MAX TEMPERATURE");
+            Serial.println("[!] MAX TEMPERATURE");
         }
 
         void minTemperature(){
@@ -34,14 +35,14 @@ namespace IUDA{
                 pixels.setPixelColor(i, pixels.Color(0, 0, 255));
             }
             pixels.show();
-            Serial.println("MIN TEMPERATURE");
+            Serial.println("[!] MIN TEMPERATURE");
         }
 
         void programRunning(){
             static bool led_state = false;
-            const int last_led = NUMPIXELS;
+            const int last_led = NUMPIXELS-1;
             static unsigned long current_time = millis();
-            const int blink_delay = 2000;
+            const int blink_delay = 300;
 
             if(millis() - current_time <= blink_delay){
                 return;
@@ -51,13 +52,14 @@ namespace IUDA{
                 pixels.setPixelColor(last_led, pixels.Color(100, 100, 100));
                 pixels.show();
                 led_state = false;
-                Serial.println("LED STATE ON");
+                // Serial.println("LED STATE ON");
             }else{
                 pixels.setPixelColor(last_led, pixels.Color(0, 0, 0));
                 pixels.show();
                 led_state = true;
-                Serial.println("LED STATE OFF");
+                // Serial.println("LED STATE OFF");
             }
+            // Serial.println("[!] PROGRAM RUNNING");
             current_time = millis();
         }
     

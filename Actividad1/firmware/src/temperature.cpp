@@ -24,9 +24,10 @@ namespace IUDA
             while (!sensor.isConversionComplete())
             {
                 delay(1);
+                // Serial.println("Waiting...");
             }
-            Serial.print("Temp: ");
-            Serial.println(sensor.getTempC());
+            // Serial.print("Temp: ");
+            // Serial.println(sensor.getTempC());
             return sensor.getTempC();
         }
 

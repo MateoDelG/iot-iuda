@@ -22,7 +22,7 @@ float refreshTemperature()
 {
   static float temperature = IUDA::Temperature::getTemperature();
   static unsigned long current_time = millis();
-  const int refresh_time = 1000;
+  const int refresh_time = 2000;
 
   if (millis() - current_time <= refresh_time)
   {
@@ -30,6 +30,7 @@ float refreshTemperature()
   }
 
   temperature = IUDA::Temperature::getTemperature();
+  Serial.println("Temperature = " + String(temperature));
   current_time = millis();
 
   return temperature;
@@ -43,7 +44,7 @@ void controlAlarms()
   static int actual_state = normal_temperature;
 
   const int max_temperature = 27;
-  const int min_temperature = 25;
+  const int min_temperature = 26;
 
   float temperature = refreshTemperature();
 
