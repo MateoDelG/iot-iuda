@@ -18,6 +18,14 @@ void loop()
   controlAlarms();
 }
 
+/**
+ * @brief Refreshes the temperature only every 2 seconds.
+ *
+ * This function is used to limit the amount of times the temperature is
+ * refreshed from the DS18B20 sensor. It is refreshed every 2 seconds.
+ *
+ * @return The current temperature.
+ */
 float refreshTemperature()
 {
   static float temperature = IUDA::Temperature::getTemperature();
@@ -36,6 +44,19 @@ float refreshTemperature()
   return temperature;
 }
 
+/**
+ * @brief Controls the color alarm based on the current temperature.
+ *
+ * This function is the main state machine for the color alarm. It
+ * controls the color alarm based on the current temperature. The
+ * temperatures are defined as follows:
+ * - The alarm is turned off if the temperature is between
+ *   26 and 27 degrees Celsius.
+ * - The alarm is set to the "min temperature" color if the
+ *   temperature is below 26 degrees Celsius.
+ * - The alarm is set to the "max temperature" color if the
+ *   temperature is above 27 degrees Celsius.
+ */
 void controlAlarms()
 {
   static int normal_temperature = 0;

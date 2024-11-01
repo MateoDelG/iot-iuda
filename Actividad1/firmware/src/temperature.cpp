@@ -11,6 +11,13 @@ namespace IUDA
 {
     namespace Temperature
     {
+        /**
+         * @brief Initialises the DS18B20 temperature sensor.
+         *
+         * This function must be called before any other function in this
+         * namespace can be used. It initialises the sensor and sets its
+         * resolution to 10 bits.
+         */
         void setupTemperature()
         {
             sensor.begin();

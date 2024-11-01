@@ -9,6 +9,14 @@ Adafruit_NeoPixel pixels(NUMPIXELS, COLOR_ALARM_PIN, NEO_GRB + NEO_KHZ800);
 
 namespace IUDA{
     namespace ColorAlarm{
+        /**
+         * @brief Initializes the NeoPixel strip.
+         * 
+         * This function needs to be called once before any other color alarm
+         * functions. It sets up the NeoPixel strip and allocates memory for
+         * the pixels. After calling this function the strip is ready to be
+         * used.
+         */ 
         void setupColorAlarm(){
             pixels.begin();          
         }
@@ -37,6 +45,14 @@ namespace IUDA{
             pixels.show();
             Serial.println("[!] MIN TEMPERATURE");
         }
+
+        /**
+         * @brief Blinks the last LED on the strip to show that the program is running.
+         * 
+         * This function should be called in the loop() function of the Arduino sketch.
+         * It will blink the last LED on the strip and print a message to the serial
+         * console to indicate that the program is running.
+         */ 
 
         void programRunning(){
             static bool led_state = false;
