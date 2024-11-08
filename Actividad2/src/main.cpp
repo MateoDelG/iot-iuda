@@ -4,13 +4,13 @@
 /****************************************
  * Define Constants
  ****************************************/
-const char *UBIDOTS_TOKEN = "BBUS-mWiBI8JCk9GDPzsoptkJQ6CNUGRtCa";  // Put here your Ubidots TOKEN
-const char *WIFI_SSID = "ESP-IUD";      // Put here your Wi-Fi SSID
-const char *WIFI_PASS = "12345678";      // Put here your Wi-Fi password
-const char *DEVICE_LABEL = "test1";   // Put here your Device label to which data  will be published
-const char *VARIABLE_LABEL = "temp1"; // Put here your Variable label to which data  will be published
+const char *UBIDOTS_TOKEN = "BBFF-OMrtBnZ59atggnkZXmROpTilSqM2ga";  // Put here your Ubidots TOKEN
+const char *WIFI_SSID = "Delga";      // Put here your Wi-Fi SSID
+const char *WIFI_PASS = "Delga1213";      // Put here your Wi-Fi password
+const char *DEVICE_LABEL = "temp001";   // Put here your Device label to which data  will be published
+const char *VARIABLE_LABEL = "temp_read001"; // Put here your Variable label to which data  will be published
 
-const int PUBLISH_FREQUENCY = 10000; // Update rate in milliseconds
+const int PUBLISH_FREQUENCY = 60000; // Update rate in milliseconds
 
 Ubidots ubidots(UBIDOTS_TOKEN);
 
