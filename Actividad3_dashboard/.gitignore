@@ -1,0 +1,8 @@
+etc/
+include/
+lib/
+Scripts/
+share/
+pyenv.cfg
+data.json
+
