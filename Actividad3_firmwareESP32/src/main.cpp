@@ -2,114 +2,115 @@
 #include <WiFiManager.h>
 #include <ESPmDNS.h>
 
+// Declaración de las tareas
+TaskHandle_t task1;
+TaskHandle_t task2;
 
-TaskHandle_t Task1;
-TaskHandle_t Task2;
+// Declaración de las funciones de las tareas
 void Task1code(void *pvParameters);
 void Task2code(void *pvParameters);
 
-
+// Funciones de configuración WiFi
 void WiFiSetup();
 void doWiFiManager();
 
-WiFiManager wifiManager;
-
+WiFiManager wifiManager;  // Objeto de WiFiManager para manejar la configuración de WiFi
 
 void setup() {
-  Serial.begin(115200);
-  WiFiSetup();
+  Serial.begin(115200);  // Inicia la comunicación serial para enviar mensajes a la consola
+  WiFiSetup();           // Llama a la función que configura la conexión WiFi
 
-  // Configurar el pin de activación del portal
-  pinMode(TRIGGER_PIN, INPUT_PULLUP);
-
-  // Crear la tarea que se ejecutará en la función Task1code() en el núcleo 0
+  // Crear y asignar la tarea Task1code() al núcleo 0
   xTaskCreatePinnedToCore(
-      Task1code,   /* Task function */
-      "Task1",     /* Name of task */
-      10000,       /* Stack size of task */
-      NULL,        /* Parameter of the task */
-      1,           /* Priority of the task */
-      &Task1,      /* Task handle to keep track of created task */
-      0);          /* Pin task to core 0 */
-  delay(500);
+      Task1code,   /* Función de la tarea */
+      "Task1",     /* Nombre de la tarea */
+      10000,       /* Tamaño de la pila de la tarea */
+      NULL,        /* Parámetro de la tarea */
+      1,           /* Prioridad de la tarea */
+      &task1,      /* Identificador de la tarea */
+      0);          /* Asignar la tarea al núcleo 0 */
+  delay(500);     // Pequeña pausa para evitar conflictos
 
-  // Crear la tarea que se ejecutará en la función Task2code() en el núcleo 1
+  // Crear y asignar la tarea Task2code() al núcleo 1
   xTaskCreatePinnedToCore(
-      Task2code,   /* Task function */
-      "Task2",     /* Name of task */
-      10000,       /* Stack size of task */
-      NULL,        /* Parameter of the task */
-      1,           /* Priority of the task */
-      &Task2,      /* Task handle to keep track of created task */
-      1);          /* Pin task to core 1 */
-  delay(500);
+      Task2code,   /* Función de la tarea */
+      "Task2",     /* Nombre de la tarea */
+      10000,       /* Tamaño de la pila de la tarea */
+      NULL,        /* Parámetro de la tarea */
+      1,           /* Prioridad de la tarea */
+      &task2,      /* Identificador de la tarea */
+      1);          /* Asignar la tarea al núcleo 1 */
+  delay(500);     // Pausa para asegurar que ambas tareas inicien correctamente
 }
 
+// Función para la primera tarea que se ejecuta en el núcleo 0
 void Task1code(void *pvParameters) {
   Serial.print("Task1 running on core ");
-  Serial.println(xPortGetCoreID());
+  Serial.println(xPortGetCoreID());  // Imprime el núcleo en el que se ejecuta la tarea
 
-  for (;;) {
-    doWiFiManager();  // Verifica si el portal debe ejecutarse
-    vTaskDelay(100 / portTICK_PERIOD_MS);  // Llamada periódica para evitar bloqueo
+  for (;;) {  // Bucle infinito
+    doWiFiManager();  // Llama a la función para manejar el portal de configuración de WiFi
+    vTaskDelay(100 / portTICK_PERIOD_MS);  // Pausa para evitar sobrecarga
   }
 }
 
+// Función para la segunda tarea que se ejecuta en el núcleo 1
 void Task2code(void *pvParameters) {
   Serial.print("Task2 running on core ");
-  Serial.println(xPortGetCoreID());
+  Serial.println(xPortGetCoreID());  // Imprime el núcleo en el que se ejecuta la tarea
 
-  for (;;) {
-    // Puedes agregar aquí otras tareas en paralelo
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  for (;;) {  // Bucle infinito
+    // Se pueden agregar más tareas aquí para ejecutarse en paralelo
+    vTaskDelay(1000 / portTICK_PERIOD_MS);  // Pausa para evitar sobrecarga
   }
 }
 
 void loop() {
-  // Deja el loop vacío, ya que estamos usando tareas
+  // El bucle loop() está vacío, ya que estamos usando tareas que se ejecutan en paralelo
 }
 
+// Configura la conexión WiFi y mDNS
 void WiFiSetup() {
-  // Intentar conectarse a una red guardada
+  // Intentar conectarse a una red WiFi guardada
   if (!wifiManager.autoConnect("ESP32_AP")) {
     Serial.println("No se pudo conectar a WiFi, iniciando en modo sin conexión");
   }
 
-  // Conexión establecida, iniciar mDNS
-  if (MDNS.begin("esp32config")) {  // Cambia "esp32config" con el nombre que prefieras
+  // Si la conexión es exitosa, iniciar mDNS (permite acceder al dispositivo mediante un nombre local)
+  if (MDNS.begin("esp32config")) {  // Cambia "esp32config" por el nombre que desees
     Serial.println("mDNS iniciado en esp32config.local");
   } else {
     Serial.println("Error al iniciar mDNS");
   }
 
-  // Publica un servicio HTTP en mDNS (opcional)
+  // Publica un servicio HTTP en mDNS, lo cual es opcional
   MDNS.addService("http", "tcp", 80);
 }
 
 // Función para manejar el portal de configuración de WiFiManager
 void doWiFiManager() {
-  static unsigned int timeout = 120;  // Tiempo en segundos para cerrar el portal automáticamente
-  static unsigned long startTime;
-  static bool portalRunning = false;
+  static unsigned int timeout = 120;  // Tiempo límite (segundos) para cerrar el portal automáticamente
+  static unsigned long start_time;
+  static bool portal_running = false;  // Indicador de si el portal está activo
 
-  // Si el portal está en ejecución, llamar a process() y verificar el tiempo de timeout
-  if (portalRunning) {
-    wifiManager.process();  // Procesa solicitudes en el servidor web
+  // Si el portal está en ejecución, procesa las solicitudes y verifica el tiempo de timeout
+  if (portal_running) {
+    wifiManager.process();  // Procesa las solicitudes del servidor web
 
-    // Verificar el tiempo de ejecución del portal
-    if ((millis() - startTime) > (timeout * 1000)) {
+    // Verifica si ha pasado el tiempo límite de actividad
+    if ((millis() - start_time) > (timeout * 1000)) {
       Serial.println("Timeout del portal de configuración");
-      portalRunning = false;
-      wifiManager.stopWebPortal();  // Detiene el servidor web
+      portal_running = false;
+      wifiManager.stopWebPortal();  // Detiene el servidor web de configuración
     }
   }
 
-  // Verificar si se debe iniciar el portal de configuración al presionar el botón
-  if (!portalRunning) {
+  // Inicia el portal de configuración si no está activo y se presiona el botón
+  if (!portal_running) {
     Serial.println("Iniciando solo el servidor web, sin AP");
-    wifiManager.setConfigPortalBlocking(false);  // Asegurar que no sea bloqueante
+    wifiManager.setConfigPortalBlocking(false);  // Asegura que el portal no sea bloqueante
     wifiManager.startWebPortal();                // Inicia solo el servidor web
-    portalRunning = true;
-    startTime = millis();  // Registrar el tiempo de inicio
+    portal_running = true;
+    start_time = millis();  // Guarda el tiempo de inicio del portal
   }
 }
