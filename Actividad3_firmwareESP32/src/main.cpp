@@ -3,6 +3,9 @@
 #include <ESPmDNS.h>
 #include <ArduinoJson.h>
 
+#include <PubSubClient.h> //MQTT library
+
+
 
 // Declaración de las tareas
 TaskHandle_t task1;
