@@ -1,6 +1,10 @@
 import json  # Importa el módulo json para trabajar con archivos JSON.
 import paho.mqtt.client as mqtt  # Importa el módulo paho.mqtt.client para trabajar con el protocolo MQTT.
 import os  # Importa el módulo os, que proporciona funciones para interactuar con el sistema operativo.
+import uuid
+import webbrowser #abrir enlace desde consola
+
+
 
 def update_json_file(data):
     filename = 'data.json'  # Define el nombre del archivo JSON donde se almacenarán los datos.
@@ -42,22 +46,28 @@ def delete_json_file(filename):
         print(f"No se encontró el archivo {filename} para borrar.")
 
 def on_connect(client, userdata, flags, rc):
-    # Función que se llama cuando el cliente se conecta al servidor MQTT.
-    print("Connected with result code " + str(rc))
-    client.subscribe("ae3/topic")  # El cliente se suscribe a un tópico específico.
+    if rc == 0:
+        print("Conectado exitosamente.")
+        client.subscribe("ae3/topic")
+    else:
+        print(f"Fallo al conectar. Código de retorno: {rc}")
 
 def on_message(client, userdata, msg):
     # Función que se llama cuando se recibe un mensaje en el tópico suscrito.
     try:
         data = json.loads(msg.payload.decode())  # Intenta decodificar el mensaje JSON.
         # Verifica si los datos son válidos antes de actualizar el archivo JSON.
-        print(data)
+        print(data, flush=True)
         if "id" in data and "properties" in data and "values" in data and len(data["properties"]) == len(data["values"]):
             update_json_file(data)
     except json.JSONDecodeError:
-        print("Error decoding JSON")  # Maneja errores de decodificación JSON.
+        print("Error decoding JSON", flush=True)  # Maneja errores de decodificación JSON.
     except Exception as e:
-        print(f"An error occurred: {e}")  # Maneja cualquier otro tipo de error.
+        print(f"An error occurred: {e}", flush=True)  # Maneja cualquier otro tipo de error.
+
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print(f"Desconectado inesperadamente. Código de retorno: {rc}")
 
 #Limpia la "base de datos" data.json
 delete_json_file("data.json")
@@ -67,17 +77,37 @@ delete_json_file("data.json")
 # Inicializa el cliente MQTT y configura las funciones de conexión y mensaje.
 try:
     # Intenta crear un cliente MQTT especificando la versión del API.
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "Actividad_3")
+    unique_client_id = f"Actividad_3_{uuid.uuid4().hex[:8]}"
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, unique_client_id)
+
 except AttributeError:
     # Si ocurre un error porque la versión del API no existe, se crea un cliente sin especificar la versión.
     client = mqtt.Client()
 
 client.on_connect = on_connect
 client.on_message = on_message
+client.on_disconnect = on_disconnect
+
+
+print(">>>>>>>>>>>>>>>Actividad: Uso de API<<<<<<<<<<<<<<<")
+print("\n\n")
+print("[!] Datos del broker (para el ESP32):\n URL: broker.mqtt.cool\n Puerto: 1883")
+# print(f"Haz clic en el siguiente enlace: {url}")
+print("[!] URL del broker para enviar datos de prueba: https://testclient-cloud.mqtt.cool/")
+webbrowser.open("https://testclient-cloud.mqtt.cool/")  # Abre el enlace en el navegador predeterminado
+print("[!]Topic al cual debes publicar: ae3/topic")
+print("\n")
+print('[!] Utiliza la siguiente estructura JSON:\n{\n"id": "carnet_o_cedula",\n"properties": ["nombre_variable1", "nombre_variable2", ...],\n"values": [valor_variable1, valor_variable2, ...]\n}')
+print('[!] Por ejemplo:\n{\n"id": "12345678",\n"properties": ["temperatura", "humedad"],\n"values": [23, 65]\n}')
+print("\n")
+
 
 # Conecta al cliente con el servidor MQTT y comienza el bucle para procesar mensajes de manera indefinida.
-client.connect("broker.mqtt.cool", 1883, 60)
-client.loop_forever()
+client.connect("broker.mqtt.cool", 1883, keepalive=300)
+try:
+    client.loop_forever()
+except Exception as e:
+    print(f"Error en el bucle principal: {e}")
 
 
 """

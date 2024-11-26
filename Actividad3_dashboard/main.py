@@ -2,6 +2,7 @@ import dash  # Importa la biblioteca Dash para la creación de aplicaciones web.
 from dash import html, dcc, Input, Output  # Importa componentes específicos de Dash para HTML y interactividad.
 import plotly.graph_objs as go  # Importa objetos gráficos de Plotly para la visualización de datos.
 import json  # Importa la biblioteca json para cargar y manipular archivos JSON.
+import webbrowser  # Importa el módulo para abrir el navegador automáticamente.
 
 app = dash.Dash(__name__)  # Crea una nueva aplicación Dash.
 
@@ -34,7 +35,7 @@ styles = {
 
 # Configura el layout principal de la aplicación usando componentes HTML y Dash.
 app.layout = html.Div([
-    html.H1("Dashboard Dinámico de Dispositivos", style={'color': '#111','text-align': 'center'}),
+    html.H1("Dashboard Dinámico de Dispositivos", style={'color': '#111', 'text-align': 'center'}),
     dcc.Interval(id='interval-component', interval=1000, n_intervals=0),  # Intervalo para actualizar los datos.
     html.Div(id='graph-container', style={'background-color': '#444'})  # Contenedor para los gráficos.
 ])
@@ -92,5 +93,28 @@ def update_graphs(n):
     data = load_data()
     return generate_graphs(data)
 
+
+run_one_time = False
+def open_dashboard():
+    global run_one_time 
+    # Define la dirección del servidor
+    host = "127.0.0.1"  # Dirección local
+    port = 8050         # Puerto del servidor
+    dashboard_url = f"http://{host}:{port}/"  # URL completa del dashboard
+
+    # Imprime la URL en consola
+    print("Actividad: Uso de API-> Dashboard Dinámico de Dispositivos")
+    print(f"[!] El dashboard está disponible en: {dashboard_url}")
+    # Abre el navegador automáticamente
+    if(not run_one_time):
+        webbrowser.open(dashboard_url)
+        run_one_time = True
+        
 if __name__ == '__main__':
-    app.run_server(debug=True)  # Ejecuta el servidor con modo debug activado.
+    # Define la dirección del servidor
+    host = "127.0.0.1"  # Dirección local
+    port = 8050         # Puerto del servidor
+    # Ejecuta el servidor
+    open_dashboard()
+    app.run_server(debug=False, host=host, port=port)
+
