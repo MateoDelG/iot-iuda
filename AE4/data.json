@@ -1,0 +1,15 @@
+{
+    "12345678": {
+        "id": "12345678",
+        "properties": [
+            "temperatura",
+            "humedad"
+        ],
+        "temperatura": [
+            23
+        ],
+        "humedad": [
+            65
+        ]
+    }
+}
